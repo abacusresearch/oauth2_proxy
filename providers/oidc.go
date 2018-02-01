@@ -51,6 +51,7 @@ func (p *OIDCProvider) Redeem(redirectURL, code string) (s *SessionState, err er
 	var claims struct {
 		Email    string `json:"email"`
 		Verified *bool  `json:"email_verified"`
+		Subject  string `json:"sub"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		return nil, fmt.Errorf("failed to parse id_token claims: %v", err)
@@ -68,6 +69,7 @@ func (p *OIDCProvider) Redeem(redirectURL, code string) (s *SessionState, err er
 		RefreshToken: token.RefreshToken,
 		ExpiresOn:    token.Expiry,
 		Email:        claims.Email,
+		User:         claims.Subject,
 	}
 
 	return
@@ -82,4 +84,8 @@ func (p *OIDCProvider) RefreshSessionIfNeeded(s *SessionState) (bool, error) {
 	s.ExpiresOn = time.Now().Add(time.Second).Truncate(time.Second)
 	fmt.Printf("refreshed access token %s (expired on %s)\n", s, origExpiration)
 	return false, nil
+}
+
+func (p *OIDCProvider) GetUserName(s *SessionState) (string, error) {
+	return s.User, nil
 }
