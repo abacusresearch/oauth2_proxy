@@ -63,6 +63,9 @@ func (p *OIDCProvider) Redeem(redirectURL, code string) (s *SessionState, err er
 	if claims.Verified != nil && !*claims.Verified {
 		return nil, fmt.Errorf("email in id_token (%s) isn't verified", claims.Email)
 	}
+	if claims.Subject == "" {
+		return nil, fmt.Errorf("id_token did not contain subject")
+	}
 
 	s = &SessionState{
 		AccessToken:  token.AccessToken,
